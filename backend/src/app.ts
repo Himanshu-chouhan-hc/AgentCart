@@ -7,8 +7,10 @@ import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import addressRoutes from './routes/address.routes.js';
 import { requestLogger } from './middleware/requestLogger.middleware.js';
-import { notFoundHandler } from './middleware/notFound.middleware.js';
+import { notFoundMiddleware } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
+import reviewRoutes from "./routes/review.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
 
 const app = express();
 
@@ -26,8 +28,10 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
-app.use(notFoundHandler);
+app.use(notFoundMiddleware);
 app.use(errorHandler);
 
 export default app;

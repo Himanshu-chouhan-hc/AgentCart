@@ -62,9 +62,11 @@ const AddressPage = () => {
   const loadAddresses = async () => {
     try {
       setLoading(true);
+      setError("");
       const data = await getAddresses();
-      setAddresses(data);
+      setAddresses(Array.isArray(data) ? data : []);
     } catch (err) {
+      setAddresses([]);
       setError(err instanceof Error ? err.message : "Failed to load addresses");
     } finally {
       setLoading(false);
@@ -342,7 +344,7 @@ const AddressPage = () => {
 
             {/* Address List */}
             <div className="space-y-4">
-              {addresses.length === 0 ? (
+              {(!Array.isArray(addresses) || addresses.length === 0) ? (
                 <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
                   <MapPin size={32} className="mx-auto mb-3 text-gray-400" />
                   <p className="text-gray-500">No addresses yet.</p>

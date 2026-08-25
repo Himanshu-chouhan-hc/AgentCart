@@ -7,6 +7,7 @@ import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
 import Address from "./pages/Address";
+import ProductDetails from "./pages/ProductDetails";
 import {
   BrowserRouter as Router,
   Routes,
@@ -28,6 +29,7 @@ function AppContent() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/address" element={<Address />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
       </Routes>
     </>
   );

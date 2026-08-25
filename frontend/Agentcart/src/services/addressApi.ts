@@ -25,6 +25,13 @@ const getAuthHeaders = () => {
   };
 };
 
+const normalizeAddresses = (payload: any): Address[] => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data?.addresses)) return payload.data.addresses;
+  if (Array.isArray(payload?.addresses)) return payload.addresses;
+  return [];
+};
+
 export const getAddresses = async (): Promise<Address[]> => {
   const response = await fetch(`${API_BASE_URL}/addresses`, {
     method: "GET",
@@ -41,7 +48,7 @@ export const getAddresses = async (): Promise<Address[]> => {
     );
   }
 
-  return payload.data.addresses;
+  return normalizeAddresses(payload);
 };
 
 export const createAddress = async (address: AddressInput): Promise<Address> => {

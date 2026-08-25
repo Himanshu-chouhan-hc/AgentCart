@@ -1,5 +1,3 @@
-
-
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -8,8 +6,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  cart   Cart?
-  orders Order[]
-  addresses Address[]
+  cart          Cart?
+  orders        Order[]
+  addresses     Address[]
+  reviews       Review[]       @relation("UserReviews")
+  wishlistItems WishlistItem[]
+
   @@index([email])
 }
