@@ -1,0 +1,20 @@
+# AgentCart backend dependencies
+# Generated from package.json
+
+@prisma/client==6.8.2
+bcryptjs==3.0.0
+cors==2.8.5
+dotenv==16.4.7
+express==4.21.2
+jsonwebtoken==9.0.2
+zod==3.23.8
+
+# Dev tools
+@types/bcryptjs==2.4.6
+@types/cors==2.8.5
+@types/express==5.0.0
+@types/jsonwebtoken==9.0.2
+@types/node==24.13.3
+prisma==6.8.2
+tsx==4.19.2
+typescript==5.7.3
