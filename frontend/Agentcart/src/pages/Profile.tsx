@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Camera,
   ChevronRight,
   CreditCard,
   Edit3,
+  Heart,
   Lock,
   LogOut,
   Mail,
@@ -38,6 +39,8 @@ const Profile = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProfile = async () => {
       try {
         setLoading(true);
@@ -45,16 +48,26 @@ const Profile = () => {
 
         const userData = await getCurrentUser();
 
-        setUser(userData);
+        if (isMounted) {
+          setUser(userData);
+        }
       } catch (err) {
         console.error("Profile error:", err);
-        setError("Unable to load your profile.");
+        if (isMounted) {
+          setError("Unable to load your profile.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -73,16 +86,13 @@ const Profile = () => {
       <main className="min-h-screen bg-[#fafafa]">
         <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
           <div className="animate-pulse">
-
             <div className="h-4 w-20 rounded bg-gray-200" />
-
             <div className="mt-4 h-10 w-48 rounded bg-gray-200" />
 
             <div className="mt-10 grid gap-6 lg:grid-cols-[280px_1fr]">
               <div className="h-96 rounded-2xl bg-gray-200" />
               <div className="h-96 rounded-2xl bg-gray-200" />
             </div>
-
           </div>
         </div>
       </main>
@@ -95,12 +105,8 @@ const Profile = () => {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fafafa] px-5">
         <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center">
-
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
-            <ShieldCheck
-              size={25}
-              className="text-red-500"
-            />
+            <ShieldCheck size={25} className="text-red-500" />
           </div>
 
           <h1 className="mt-5 text-xl font-bold">
@@ -118,22 +124,17 @@ const Profile = () => {
           >
             Go to Login
           </button>
-
         </div>
       </main>
     );
   }
 
-  const initial =
-    user.name?.charAt(0)?.toUpperCase() || "U";
+  const initial = user.name?.charAt(0)?.toUpperCase() || "U";
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-[#111111]">
-
       <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10">
-
         {/* BACK */}
-
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -144,7 +145,6 @@ const Profile = () => {
         </button>
 
         {/* HEADER */}
-
         <div className="mb-8">
           <p className="text-sm font-bold uppercase tracking-wider text-[#b39a00]">
             Account
@@ -160,17 +160,11 @@ const Profile = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-
           {/* ================= PROFILE CARD ================= */}
-
           <div className="h-fit rounded-2xl border border-gray-200 bg-white p-6">
-
             <div className="flex flex-col items-center text-center">
-
               {/* AVATAR */}
-
               <div className="relative">
-
                 {user.avatar ? (
                   <img
                     src={user.avatar}
@@ -190,34 +184,25 @@ const Profile = () => {
                 >
                   <Camera size={15} />
                 </button>
-
               </div>
 
               {/* USER NAME */}
-
-              <h2 className="mt-5 text-xl font-bold">
-                {user.name}
-              </h2>
+              <h2 className="mt-5 text-xl font-bold">{user.name}</h2>
 
               {/* USER EMAIL */}
-
               <p className="mt-1 max-w-full truncate text-sm text-gray-500">
                 {user.email}
               </p>
 
               {/* VERIFIED */}
-
               <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
                 <ShieldCheck size={14} />
                 Verified account
               </div>
-
             </div>
 
             {/* MENU */}
-
             <div className="mt-7 space-y-1 border-t border-gray-100 pt-5">
-
               <button
                 type="button"
                 className="flex w-full items-center justify-between rounded-xl bg-yellow-50 px-3 py-3 text-sm font-bold"
@@ -226,7 +211,6 @@ const Profile = () => {
                   <User size={17} />
                   Profile
                 </span>
-
                 <ChevronRight size={16} />
               </button>
 
@@ -239,7 +223,19 @@ const Profile = () => {
                   <Package size={17} />
                   My Orders
                 </span>
+                <ChevronRight size={16} />
+              </button>
 
+              {/* WISHLIST OPTION */}
+              <button
+                type="button"
+                onClick={() => navigate("/wishlist")}
+                className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                <span className="flex items-center gap-3">
+                  <Heart size={17} />
+                  Wishlist
+                </span>
                 <ChevronRight size={16} />
               </button>
 
@@ -252,7 +248,6 @@ const Profile = () => {
                   <MapPin size={17} />
                   Addresses
                 </span>
-
                 <ChevronRight size={16} />
               </button>
 
@@ -265,29 +260,18 @@ const Profile = () => {
                   <CreditCard size={17} />
                   Payments
                 </span>
-
                 <ChevronRight size={16} />
               </button>
-
             </div>
-
           </div>
 
           {/* ================= RIGHT SIDE ================= */}
-
           <div className="space-y-6">
-
             {/* PERSONAL INFORMATION */}
-
             <section className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7">
-
               <div className="flex items-center justify-between border-b border-gray-100 pb-5">
-
                 <div>
-                  <h2 className="text-lg font-bold">
-                    Personal Information
-                  </h2>
-
+                  <h2 className="text-lg font-bold">Personal Information</h2>
                   <p className="mt-1 text-sm text-gray-500">
                     Your account information.
                   </p>
@@ -300,11 +284,9 @@ const Profile = () => {
                   <Edit3 size={15} />
                   Edit
                 </button>
-
               </div>
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
-
                 <ProfileField
                   label="Full Name"
                   icon={<User size={17} />}
@@ -328,95 +310,61 @@ const Profile = () => {
                   icon={<MapPin size={17} />}
                   value={user.location || "Not provided"}
                 />
-
               </div>
-
             </section>
 
             {/* SECURITY */}
-
             <section className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7">
-
-              <h2 className="text-lg font-bold">
-                Security
-              </h2>
-
+              <h2 className="text-lg font-bold">Security</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Manage your password and account security.
               </p>
 
               <div className="mt-5 rounded-xl border border-gray-200">
-
                 <button
                   type="button"
                   className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
                 >
-
                   <div className="flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100">
                       <Lock size={18} />
                     </div>
 
                     <div>
-                      <p className="text-sm font-bold">
-                        Change Password
-                      </p>
-
+                      <p className="text-sm font-bold">Change Password</p>
                       <p className="mt-1 text-xs text-gray-500">
                         Update your account password
                       </p>
                     </div>
-
                   </div>
 
-                  <ChevronRight
-                    size={17}
-                    className="text-gray-400"
-                  />
-
+                  <ChevronRight size={17} className="text-gray-400" />
                 </button>
-
               </div>
-
             </section>
 
             {/* LOGOUT */}
-
             <section className="rounded-2xl border border-red-100 bg-white p-6">
               <button
                 type="button"
                 onClick={handleLogout}
                 className="flex w-full items-center gap-3 text-left"
               >
-
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
-                  <LogOut
-                    size={18}
-                    className="text-red-500"
-                  />
+                  <LogOut size={18} className="text-red-500" />
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold text-red-600">
-                    Logout
-                  </p>
-
+                  <p className="text-sm font-bold text-red-600">Logout</p>
                   <p className="mt-1 text-xs text-gray-500">
                     Sign out from your AgentCart account
                   </p>
                 </div>
-
               </button>
-
             </section>
-
           </div>
-
         </div>
-
       </div>
-
     </main>
   );
 };
@@ -429,11 +377,7 @@ interface ProfileFieldProps {
   icon: ReactNode;
 }
 
-const ProfileField = ({
-  label,
-  value,
-  icon,
-}: ProfileFieldProps) => {
+const ProfileField = ({ label, value, icon }: ProfileFieldProps) => {
   return (
     <div>
       <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-400">
@@ -441,15 +385,8 @@ const ProfileField = ({
       </label>
 
       <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-        <span className="shrink-0 text-gray-400">
-          {icon}
-        </span>
-
-        <span className="truncate text-sm font-medium">
-          {value}
-        </span>
-
+        <span className="shrink-0 text-gray-400">{icon}</span>
+        <span className="truncate text-sm font-medium">{value}</span>
       </div>
     </div>
   );

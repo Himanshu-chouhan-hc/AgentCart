@@ -27,8 +27,12 @@ const requestAuth = async (path: string, body: Record<string, string>) => {
   }
 
   const authResponse = payload as AuthResponse;
+  
+  // Save in BOTH keys so all services get the updated token
   localStorage.setItem("agentcart_token", authResponse.data.token);
+  localStorage.setItem("token", authResponse.data.token);
   localStorage.setItem("agentcart_user", JSON.stringify(authResponse.data.user));
+  
   return authResponse.data.user;
 };
 
@@ -40,18 +44,19 @@ export const registerUser = (name: string, email: string, password: string) =>
 
 export const logoutUser = async () => {
   localStorage.removeItem("agentcart_token");
+  localStorage.removeItem("token");
   localStorage.removeItem("agentcart_user");
   
-  // Dispatch custom event to notify navbar and other components
   window.dispatchEvent(new Event("logout"));
   
   await fetch(`${API_BASE_URL}/auth/logout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
-}
+};
+
 export const getCurrentUser = async () => {
-  const token = localStorage.getItem("agentcart_token");
+  const token = localStorage.getItem("agentcart_token") || localStorage.getItem("token");
 
   if (!token) {
     throw new Error("Not authenticated");

@@ -1,35 +1,58 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-type Address = {
-  id: string;
+export interface AddressInput {
   fullName: string;
   phone: string;
-  addressLine1: string;
-  addressLine2?: string | null;
+  street: string;
   city: string;
   state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+  zipCode: string;
+  country?: string;
+  isDefault?: boolean;
+}
 
-type AddressInput = Omit<Address, 'id' | 'createdAt' | 'updatedAt'> & { isDefault: boolean };
+export interface Address extends AddressInput {
+  id: string;
+  userId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("agentcart_token");
+const getAuthHeaders = (): Record<string, string> => {
+  // Checks all possible token keys in LocalStorage
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("agentcart_token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("jwt") ||
+    localStorage.getItem("user_token");
+
+  if (!token) {
+    throw new Error("You are not logged in. Please log in first.");
+  }
+
   return {
-    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
+    Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
   };
 };
 
-const normalizeAddresses = (payload: any): Address[] => {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data?.addresses)) return payload.data.addresses;
-  if (Array.isArray(payload?.addresses)) return payload.addresses;
-  return [];
+const handleResponse = async <T>(response: Response): Promise<T> => {
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const errorMessage =
+      payload && typeof payload === "object" && "message" in payload
+        ? (payload as { message: string }).message
+        : "An unexpected error occurred.";
+    throw new Error(errorMessage);
+  }
+
+  if (payload && typeof payload === "object" && "data" in payload) {
+    return payload.data as T;
+  }
+
+  return payload as T;
 };
 
 export const getAddresses = async (): Promise<Address[]> => {
@@ -37,92 +60,20 @@ export const getAddresses = async (): Promise<Address[]> => {
     method: "GET",
     headers: getAuthHeaders(),
   });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      payload && "message" in payload && payload.message
-        ? payload.message
-        : "Failed to fetch addresses"
-    );
+  const res = await handleResponse<{ addresses: Address[] } | Address[]>(response);
+  if (Array.isArray(res)) return res;
+  if (res && "addresses" in res && Array.isArray(res.addresses)) {
+    return res.addresses;
   }
-
-  return normalizeAddresses(payload);
+  return [];
 };
 
-export const createAddress = async (address: AddressInput): Promise<Address> => {
+export const createAddress = async (data: AddressInput): Promise<Address> => {
   const response = await fetch(`${API_BASE_URL}/addresses`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(address),
+    body: JSON.stringify(data),
   });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      payload && "message" in payload && payload.message
-        ? payload.message
-        : "Failed to create address"
-    );
-  }
-
-  return payload.data.address;
-};
-
-export const updateAddress = async (id: string, address: AddressInput): Promise<Address> => {
-  const response = await fetch(`${API_BASE_URL}/addresses/${id}`, {
-    method: "PUT",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(address),
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      payload && "message" in payload && payload.message
-        ? payload.message
-        : "Failed to update address"
-    );
-  }
-
-  return payload.data.address;
-};
-
-export const deleteAddress = async (id: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/addresses/${id}`, {
-    method: "DELETE",
-    headers: getAuthHeaders(),
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      payload && "message" in payload && payload.message
-        ? payload.message
-        : "Failed to delete address"
-    );
-  }
-};
-
-export const setDefaultAddress = async (id: string): Promise<Address> => {
-  const response = await fetch(`${API_BASE_URL}/addresses/${id}/default`, {
-    method: "PATCH",
-    headers: getAuthHeaders(),
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      payload && "message" in payload && payload.message
-        ? payload.message
-        : "Failed to set default address"
-    );
-  }
-
-  return payload.data.address;
+  const res = await handleResponse<{ address: Address } | Address>(response);
+  return res && "address" in res ? res.address : (res as Address);
 };

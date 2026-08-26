@@ -6,8 +6,12 @@ import Signup from "./pages/Signup";
 import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
-import Address from "./pages/Address";
+import Addresses from "./pages/Addresses";
 import ProductDetails from "./pages/ProductDetails";
+import Wishlist from "./pages/Wishlist";
+import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -20,7 +24,10 @@ function AppContent() {
 
   return (
     <>
-      {location.pathname !== "/login" && location.pathname !== "/signup" && <Navbar />}
+      {location.pathname !== "/login" && location.pathname !== "/signup" && (
+        <Navbar />
+      )}
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -28,9 +35,12 @@ function AppContent() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/address" element={<Address />} />
+        <Route path="/addresses" element={<Addresses />} />
         <Route path="/products/:id" element={<ProductDetails />} />
-      </Routes>
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/checkout" element={<Checkout />} />
+<Route path="/orders/:orderId" element={<Orders />} />      </Routes>
+
     </>
   );
 }

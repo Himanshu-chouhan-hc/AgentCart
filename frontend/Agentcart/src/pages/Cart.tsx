@@ -8,14 +8,18 @@ import {
   Trash2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+
 import {
-  createOrder,
   getCart,
   updateCartItem,
   removeCartItem,
   type Cart as CartData,
 } from "../services/cartApi";
+
 import "../styles/cart.css";
+
+const FREE_SHIPPING_THRESHOLD = 999;
+const STANDARD_DELIVERY_FEE = 49;
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -23,7 +27,6 @@ const Cart = () => {
   const [cart, setCart] = useState<CartData>({ items: [] });
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [placingOrder, setPlacingOrder] = useState(false);
   const [message, setMessage] = useState("");
 
   // =========================
@@ -48,7 +51,9 @@ const Cart = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("agentcart_token");
+    const token =
+      localStorage.getItem("agentcart_token") ||
+      localStorage.getItem("token");
 
     if (!token) {
       navigate("/login");
@@ -71,7 +76,9 @@ const Cart = () => {
   }, [cart.items]);
 
   const delivery =
-    subtotal === 0 || subtotal >= 999 ? 0 : 49;
+    subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
+      ? 0
+      : STANDARD_DELIVERY_FEE;
 
   const total = subtotal + delivery;
 
@@ -82,10 +89,7 @@ const Cart = () => {
     itemId: string,
     quantity: number
   ) => {
-    // Never allow quantity below 1
-    if (quantity < 1) {
-      return;
-    }
+    if (quantity < 1) return;
 
     try {
       setUpdating(itemId);
@@ -93,10 +97,7 @@ const Cart = () => {
 
       await updateCartItem(itemId, quantity);
 
-      // Backend returns updated item,
-      // so fetch complete cart again.
       const refreshedCart = await getCart();
-
       setCart(refreshedCart);
     } catch (error) {
       setMessage(
@@ -119,9 +120,7 @@ const Cart = () => {
 
       await removeCartItem(itemId);
 
-      // Refresh complete cart
       const refreshedCart = await getCart();
-
       setCart(refreshedCart);
     } catch (error) {
       setMessage(
@@ -131,39 +130,6 @@ const Cart = () => {
       );
     } finally {
       setUpdating(null);
-    }
-  };
-
-  // =========================
-  // PLACE ORDER
-  // =========================
-  const placeOrder = async () => {
-    if (cart.items.length === 0) {
-      return;
-    }
-
-    try {
-      setPlacingOrder(true);
-      setMessage("");
-
-      await createOrder(
-        cart.items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-        }))
-      );
-
-      setCart({ items: [] });
-
-      setMessage("Order placed successfully!");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not place your order."
-      );
-    } finally {
-      setPlacingOrder(false);
     }
   };
 
@@ -439,7 +405,7 @@ const Cart = () => {
               {delivery > 0 && (
                 <p className="delivery-note">
                   Add ₹
-                  {(999 - subtotal).toLocaleString(
+                  {(FREE_SHIPPING_THRESHOLD - subtotal).toLocaleString(
                     "en-IN"
                   )}{" "}
                   more for free delivery.
@@ -459,24 +425,15 @@ const Cart = () => {
                 </strong>
               </div>
 
+              {/* ================= CHECKOUT ================= */}
               <button
                 type="button"
                 className="cart-button checkout-button"
-                disabled={
-                  placingOrder ||
-                  cart.items.length === 0
-                }
-                onClick={() =>
-                  void placeOrder()
-                }
+                disabled={cart.items.length === 0}
+                onClick={() => navigate("/checkout")}
               >
-                {placingOrder
-                  ? "Processing..."
-                  : "Place order"}
-
-                {!placingOrder && (
-                  <ArrowRight size={18} />
-                )}
+                Proceed to Checkout
+                <ArrowRight size={18} />
               </button>
 
               <div className="secure-checkout">

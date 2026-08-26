@@ -6,8 +6,12 @@ import {
   deleteAddress,
   setDefaultAddress,
 } from "../controllers/address.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+// 🔑 Add auth middleware so req.user gets populated
+router.use(protect);
 
 router.get("/", getAddresses);
 router.post("/", createAddress);

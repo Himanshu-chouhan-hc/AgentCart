@@ -20,9 +20,25 @@ export type Cart = {
   items: CartItem[];
 };
 
-const authHeaders = (): Record<string, string> => ({
-  Authorization: `Bearer ${localStorage.getItem("agentcart_token") || ""}`,
-});
+export interface OrderItemInput {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateOrderPayload {
+  items: OrderItemInput[];
+}
+
+const authHeaders = (): Record<string, string> => {
+  const token =
+    localStorage.getItem("agentcart_token") ||
+    localStorage.getItem("token") ||
+    "";
+
+  return {
+    Authorization: token ? (token.startsWith("Bearer ") ? token : `Bearer ${token}`) : "",
+  };
+};
 
 // =========================
 // GET CART
@@ -150,24 +166,17 @@ export const removeCartItem = async (
 // =========================
 // CREATE ORDER
 // =========================
-export const createOrder = async (
-  items: Array<{
-    productId: string;
-    quantity: number;
-  }>
-) => {
+export const createOrder = async (payload: CreateOrderPayload) => {
   const response = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...authHeaders(),
     },
-    body: JSON.stringify({
-      items,
-    }),
+    body: JSON.stringify(payload),
   });
 
-  const payload = (await response.json().catch(() => null)) as {
+  const resData = (await response.json().catch(() => null)) as {
     success?: boolean;
     data?: unknown;
     message?: string;
@@ -175,9 +184,9 @@ export const createOrder = async (
 
   if (!response.ok) {
     throw new Error(
-      payload?.message || "Could not place your order."
+      resData?.message || "Could not place your order."
     );
   }
 
-  return payload?.data;
+  return resData?.data;
 };
