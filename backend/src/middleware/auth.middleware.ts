@@ -1,7 +1,12 @@
-import type { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
-import { ApiError } from '../utils/ApiError.js'; // 👈 Missing import added
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express";
+
+import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+import { ApiError } from "../utils/ApiError.js";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -10,22 +15,54 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const protect = (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+export const protect = (
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(new ApiError(401, 'Unauthorized: missing token'));
+  console.log("AUTH HEADER:", authHeader);
+
+  if (!authHeader) {
+    return next(
+      new ApiError(401, "Unauthorized: missing token")
+    );
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!authHeader.startsWith("Bearer ")) {
+    return next(
+      new ApiError(401, "Unauthorized: invalid authorization header")
+    );
+  }
+
+  const token = authHeader.substring(7).trim();
+
+  if (!token) {
+    return next(
+      new ApiError(401, "Unauthorized: missing token")
+    );
+  }
 
   try {
-    const decoded = jwt.verify(token, env.jwtSecret) as { id?: string; userId?: string; email?: string };
+    const decoded = jwt.verify(
+      token,
+      env.jwtSecret
+    ) as {
+      id?: string;
+      userId?: string;
+      email?: string;
+    };
 
     const userId = decoded.id || decoded.userId;
 
     if (!userId) {
-      return next(new ApiError(401, 'Unauthorized: invalid token payload'));
+      return next(
+        new ApiError(
+          401,
+          "Unauthorized: invalid token payload"
+        )
+      );
     }
 
     req.user = {
@@ -35,7 +72,13 @@ export const protect = (req: AuthenticatedRequest, _res: Response, next: NextFun
 
     next();
   } catch (error) {
-    console.error('JWT Verification Failed:', error);
-    next(new ApiError(401, 'Unauthorized: invalid or expired token'));
+    console.error("JWT Verification Failed:", error);
+
+    return next(
+      new ApiError(
+        401,
+        "Unauthorized: invalid or expired token"
+      )
+    );
   }
 };

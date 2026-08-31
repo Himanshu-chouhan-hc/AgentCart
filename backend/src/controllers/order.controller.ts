@@ -1,6 +1,7 @@
 import type { Response } from "express";
 
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 
 import {
   createOrder,
@@ -17,12 +18,14 @@ export const createUserOrder = asyncHandler(
     req: AuthenticatedRequest,
     res: Response
   ) => {
-    const parsed = createOrderSchema.parse(
-      req.body
-    );
+    if (!req.user) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const parsed = createOrderSchema.parse(req.body);
 
     const order = await createOrder(
-      req.user!.id,
+      req.user.id,
       parsed.items
     );
 
@@ -39,19 +42,23 @@ export const getOrderById = asyncHandler(
     req: AuthenticatedRequest,
     res: Response
   ) => {
-    const { id } = req.params;
+    if (!req.user) {
+      throw new ApiError(401, "Unauthorized");
+    }
 
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        message: "Order ID is required",
-      });
-      return;
+    const orderId = req.params.id;
+
+    // TypeScript fix
+    if (!orderId || Array.isArray(orderId)) {
+      throw new ApiError(
+        400,
+        "Invalid order ID"
+      );
     }
 
     const order = await getOrderByIdService(
-      req.user!.id,
-      id
+      req.user.id,
+      orderId
     );
 
     res.status(200).json({

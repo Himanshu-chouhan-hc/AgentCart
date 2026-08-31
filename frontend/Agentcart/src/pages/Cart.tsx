@@ -29,9 +29,6 @@ const Cart = () => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  // =========================
-  // LOAD CART
-  // =========================
   const loadCart = async () => {
     try {
       setLoading(true);
@@ -63,9 +60,6 @@ const Cart = () => {
     void loadCart();
   }, [navigate]);
 
-  // =========================
-  // TOTALS
-  // =========================
   const subtotal = useMemo(() => {
     return cart.items.reduce((total, item) => {
       return (
@@ -82,9 +76,6 @@ const Cart = () => {
 
   const total = subtotal + delivery;
 
-  // =========================
-  // UPDATE QUANTITY
-  // =========================
   const handleQuantityChange = async (
     itemId: string,
     quantity: number
@@ -110,9 +101,6 @@ const Cart = () => {
     }
   };
 
-  // =========================
-  // REMOVE ITEM
-  // =========================
   const handleRemove = async (itemId: string) => {
     try {
       setUpdating(itemId);
@@ -133,20 +121,13 @@ const Cart = () => {
     }
   };
 
-  // =========================
-  // LOADING
-  // =========================
   if (loading) {
     return (
       <main className="cart-page">
         <div className="cart-empty">
           <ShoppingBag size={36} />
-
           <h2>Loading your cart...</h2>
-
-          <p>
-            We're getting your selected products ready.
-          </p>
+          <p>We're getting your selected products ready.</p>
         </div>
       </main>
     );
@@ -155,24 +136,15 @@ const Cart = () => {
   return (
     <main className="cart-page">
       <div className="cart-container">
-
-        {/* ================= HEADER ================= */}
         <header className="cart-header">
           <div>
-            <Link
-              to="/shop"
-              className="back-link"
-            >
+            <Link to="/shop" className="back-link">
               <ArrowLeft size={16} />
               Continue shopping
             </Link>
 
-            <p className="cart-eyebrow">
-              YOUR PICKS
-            </p>
-
+            <p className="cart-eyebrow">YOUR PICKS</p>
             <h1>Your shopping cart</h1>
-
             <p className="cart-subtitle">
               Review your picks before checkout.
             </p>
@@ -180,82 +152,45 @@ const Cart = () => {
 
           <div className="cart-header-icon">
             <ShoppingBag size={30} />
-
-            <span>
-              {cart.items.length}
-            </span>
+            <span>{cart.items.length}</span>
           </div>
         </header>
 
-        {/* ================= MESSAGE ================= */}
-        {message && (
-          <div className="cart-message">
-            {message}
-          </div>
-        )}
+        {message && <div className="cart-message">{message}</div>}
 
-        {/* ================= EMPTY CART ================= */}
         {cart.items.length === 0 ? (
           <section className="cart-empty">
-
             <div className="cart-empty-icon">
               <ShoppingBag size={38} />
             </div>
 
-            <h2>
-              Your cart is empty.
-            </h2>
+            <h2>Your cart is empty.</h2>
+            <p>Discover something worth keeping.</p>
 
-            <p>
-              Discover something worth keeping.
-            </p>
-
-            <Link
-              to="/shop"
-              className="cart-button"
-            >
+            <Link to="/shop" className="cart-button">
               Explore products
               <ArrowRight size={17} />
             </Link>
-
           </section>
         ) : (
-
           <div className="cart-layout">
-
-            {/* ================= CART ITEMS ================= */}
             <section className="cart-items-section">
-
               <div className="cart-items-heading">
                 <h2>Your items</h2>
-
                 <span>
                   {cart.items.length}{" "}
-                  {cart.items.length === 1
-                    ? "item"
-                    : "items"}
+                  {cart.items.length === 1 ? "item" : "items"}
                 </span>
               </div>
 
               <div className="cart-items">
-
                 {cart.items.map((item) => {
-                  const price =
-                    Number(item.product.price);
-
-                  const itemTotal =
-                    price * item.quantity;
-
-                  const isUpdating =
-                    updating === item.id;
+                  const price = Number(item.product.price);
+                  const itemTotal = price * item.quantity;
+                  const isUpdating = updating === item.id;
 
                   return (
-                    <article
-                      className="cart-item"
-                      key={item.id}
-                    >
-
-                      {/* IMAGE */}
+                    <article className="cart-item" key={item.id}>
                       <Link
                         to={`/product/${item.product.id}`}
                         className="cart-item-image"
@@ -270,36 +205,25 @@ const Cart = () => {
                         )}
                       </Link>
 
-                      {/* PRODUCT INFO */}
                       <div className="cart-item-info">
-
                         <p className="cart-item-category">
                           {item.product.category?.name ||
                             "AgentCart Pick"}
                         </p>
 
-                        <Link
-                          to={`/product/${item.product.id}`}
-                        >
-                          <h2>
-                            {item.product.name}
-                          </h2>
+                        <Link to={`/product/${item.product.id}`}>
+                          <h2>{item.product.name}</h2>
                         </Link>
 
                         <p className="cart-item-price">
-                          ₹
-                          {price.toLocaleString(
-                            "en-IN"
-                          )}
+                          ₹{price.toLocaleString("en-IN")}
                         </p>
 
-                        {/* QUANTITY */}
                         <div className="quantity">
-
                           <button
                             type="button"
                             disabled={
-                              isUpdating ||
+                              Boolean(isUpdating) ||
                               item.quantity <= 1
                             }
                             onClick={() =>
@@ -314,14 +238,12 @@ const Cart = () => {
                           </button>
 
                           <span>
-                            {isUpdating
-                              ? "..."
-                              : item.quantity}
+                            {isUpdating ? "..." : item.quantity}
                           </span>
 
                           <button
                             type="button"
-                            disabled={isUpdating}
+                            disabled={Boolean(isUpdating)}
                             onClick={() =>
                               void handleQuantityChange(
                                 item.id,
@@ -332,73 +254,42 @@ const Cart = () => {
                           >
                             <Plus size={14} />
                           </button>
-
                         </div>
-
                       </div>
 
-                      {/* ITEM TOTAL */}
                       <div className="cart-item-right">
-
                         <strong>
-                          ₹
-                          {itemTotal.toLocaleString(
-                            "en-IN"
-                          )}
+                          ₹{itemTotal.toLocaleString("en-IN")}
                         </strong>
 
                         <button
                           type="button"
                           className="remove-item"
-                          disabled={isUpdating}
-                          onClick={() =>
-                            void handleRemove(item.id)
-                          }
+                          disabled={Boolean(isUpdating)}
+                          onClick={() => void handleRemove(item.id)}
                         >
                           <Trash2 size={15} />
                           Remove
                         </button>
-
                       </div>
-
                     </article>
                   );
                 })}
-
               </div>
             </section>
 
-            {/* ================= SUMMARY ================= */}
             <aside className="cart-summary">
-
-              <p className="summary-label">
-                ORDER SUMMARY
-              </p>
+              <p className="summary-label">ORDER SUMMARY</p>
 
               <div className="summary-row">
                 <span>Subtotal</span>
-
-                <strong>
-                  ₹
-                  {subtotal.toLocaleString(
-                    "en-IN"
-                  )}
-                </strong>
+                <strong>₹{subtotal.toLocaleString("en-IN")}</strong>
               </div>
 
               <div className="summary-row">
                 <span>Delivery</span>
-
-                <strong
-                  className={
-                    delivery === 0
-                      ? "free"
-                      : ""
-                  }
-                >
-                  {delivery === 0
-                    ? "FREE"
-                    : `₹${delivery}`}
+                <strong className={delivery === 0 ? "free" : ""}>
+                  {delivery === 0 ? "FREE" : `₹${delivery}`}
                 </strong>
               </div>
 
@@ -416,16 +307,9 @@ const Cart = () => {
 
               <div className="cart-total">
                 <span>Total</span>
-
-                <strong>
-                  ₹
-                  {total.toLocaleString(
-                    "en-IN"
-                  )}
-                </strong>
+                <strong>₹{total.toLocaleString("en-IN")}</strong>
               </div>
 
-              {/* ================= CHECKOUT ================= */}
               <button
                 type="button"
                 className="cart-button checkout-button"
@@ -440,15 +324,10 @@ const Cart = () => {
                 🔒 Secure checkout
               </div>
 
-              <Link
-                to="/shop"
-                className="summary-continue"
-              >
+              <Link to="/shop" className="summary-continue">
                 Continue shopping
               </Link>
-
             </aside>
-
           </div>
         )}
       </div>

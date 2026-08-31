@@ -6,17 +6,22 @@ import {
   deleteAddress,
   setDefaultAddress,
 } from "../controllers/address.controller.js";
-import { protect } from "../middleware/auth.middleware.js";
+import { protect } from "../middleware/auth.middleware.js"; // 'protect' import karein
 
 const router = Router();
 
-// 🔑 Add auth middleware so req.user gets populated
+// Saare routes par protect middleware applied hai
 router.use(protect);
 
-router.get("/", getAddresses);
-router.post("/", createAddress);
-router.put("/:id", updateAddress);
-router.delete("/:id", deleteAddress);
-router.patch("/:id/default", setDefaultAddress);
+router.route("/")
+  .get(getAddresses)
+  .post(createAddress);
+
+router.route("/:id")
+  .put(updateAddress)
+  .delete(deleteAddress);
+
+router.route("/:id/default")
+  .patch(setDefaultAddress);
 
 export default router;

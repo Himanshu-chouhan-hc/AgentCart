@@ -1,25 +1,23 @@
-import type { Request, Response } from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { createPaymentIntent } from '../services/payment.service.js';
+import type { Response } from "express";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { createPaymentIntent } from "../services/payment.service.js";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 
-export const createPayment = asyncHandler(async (req: Request, res: Response) => {
-  const { amount, currency, userApproved, cartTotal, orderId, paymentRef } = req.body as {
-    amount: number;
-    currency?: string;
-    userApproved?: boolean;
-    cartTotal?: number;
-    orderId?: string;
-    paymentRef?: string;
-  };
+export const createPayment = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
-  const payment = await createPaymentIntent({
-    amount,
-    currency,
-    userApproved,
-    cartTotal,
-    orderId,
-    paymentRef,
-  });
+    const payment = await createPaymentIntent(req.user.id);
 
-  res.status(201).json({ success: true, data: payment });
-});
+    res.status(201).json({
+      success: true,
+      data: payment,
+    });
+  }
+);
