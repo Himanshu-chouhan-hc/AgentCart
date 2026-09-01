@@ -23,9 +23,8 @@ export interface Address extends AddressInput {
 const getAuthHeaders = (): Record<string, string> => {
   // Aapke project mein jis bhi naam se token save hota ho, unhe yahan check kiya gaya hai
   const token =
-    localStorage.getItem("token") ||
     localStorage.getItem("agentcart_token") ||
-    localStorage.getItem("authToken");
+    localStorage.getItem("token");
 
   if (!token) {
     throw new Error("Authentication token missing. Please login again.");

@@ -126,6 +126,27 @@ export const createOrder = async (
   return order;
 };
 
+// GET ALL ORDERS FOR USER
+export const getOrdersByUser = async (
+  userId: string
+) => {
+  return prisma.order.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+};
+
 // GET ORDER BY ID
 export const getOrderById = async (
   userId: string,

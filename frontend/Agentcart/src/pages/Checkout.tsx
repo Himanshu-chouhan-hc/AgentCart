@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Check,
@@ -18,12 +18,17 @@ import {
   getAddresses,
   type Address,
 } from "../services/addressApi";
+import {
+  createPayment,
+  verifyPayment,
+} from "../services/paymentApi";
 
 const FREE_SHIPPING_THRESHOLD = 999;
 const STANDARD_DELIVERY_FEE = 49;
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -54,9 +59,15 @@ const Checkout = () => {
         try {
           const cartData = await getCart();
           console.log("Checkout fetched cartData:", cartData);
-          itemsList = Array.isArray(cartData)
+          const allItems = Array.isArray(cartData)
             ? cartData
             : cartData?.items ?? [];
+          const selectedItemIds = (location.state as
+            | { selectedItemIds?: string[] }
+            | null)?.selectedItemIds;
+          itemsList = selectedItemIds
+            ? allItems.filter((item) => selectedItemIds.includes(item.id))
+            : allItems;
         } catch (cartErr) {
           console.error("Error fetching cart in Checkout:", cartErr);
         }
@@ -102,7 +113,7 @@ const Checkout = () => {
     return () => {
       mounted = false;
     };
-  }, [navigate]);
+  }, [location.state, navigate]);
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -146,7 +157,38 @@ const Checkout = () => {
         })),
       });
 
-      navigate("/orders", {
+      const payment = await createPayment(order.id);
+      await payment.loadScript();
+
+      await new Promise<void>((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: payment.key,
+          amount: payment.amount,
+          currency: payment.currency,
+          name: "AgentCart",
+          order_id: payment.id,
+          handler: async (response) => {
+            try {
+              await verifyPayment({
+                orderId: order.id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              resolve();
+            } catch (verificationError) {
+              reject(verificationError);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Payment was cancelled.")),
+          },
+        });
+
+        razorpay.open();
+      });
+
+      navigate(`/orders/${order.id}`, {
         state: {
           order,
           addressId: selectedAddress,
@@ -329,10 +371,16 @@ const Checkout = () => {
                             </p>
 
                             <p className="mt-3 text-sm leading-6 text-gray-600">
-                              {address.street}
+                              {address.addressLine1}
+                              {address.addressLine2 && (
+                                <>
+                                  <br />
+                                  {address.addressLine2}
+                                </>
+                              )}
                               <br />
                               {address.city}, {address.state} -{" "}
-                              {address.zipCode}
+                              {address.postalCode}
                               <br />
                               {address.country || "India"}
                             </p>
@@ -465,11 +513,17 @@ const Checkout = () => {
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-gray-500">
-                  {selectedAddressData.street}
+                  {selectedAddressData.addressLine1}
+                  {selectedAddressData.addressLine2 && (
+                    <>
+                      <br />
+                      {selectedAddressData.addressLine2}
+                    </>
+                  )}
                   <br />
                   {selectedAddressData.city},{" "}
                   {selectedAddressData.state} -{" "}
-                  {selectedAddressData.zipCode}
+                  {selectedAddressData.postalCode}
                 </p>
               </div>
             )}

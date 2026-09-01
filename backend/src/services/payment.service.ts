@@ -7,7 +7,10 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || "",
 });
 
-export const createPaymentIntent = async (userId: string) => {
+export const createPaymentIntent = async (
+  userId: string,
+  orderId: string
+) => {
   if (!process.env.RAZORPAY_KEY_ID) {
     throw new ApiError(500, "Razorpay Key ID is missing");
   }
@@ -16,40 +19,27 @@ export const createPaymentIntent = async (userId: string) => {
     throw new ApiError(500, "Razorpay Key Secret is missing");
   }
 
-  // Get user's cart from database
-  const cart = await prisma.cart.findUnique({
+  const order = await prisma.order.findFirst({
     where: {
+      id: orderId,
       userId,
     },
     include: {
       items: {
-        include: {
-          product: true,
-        },
+        include: { product: true },
       },
     },
   });
 
-  if (!cart || cart.items.length === 0) {
-    throw new ApiError(400, "Cart is empty");
+  if (!order || order.items.length === 0) {
+    throw new ApiError(404, "Order not found");
   }
 
   // Calculate amount from DATABASE prices
   let subtotal = 0;
 
-  for (const item of cart.items) {
-    if (item.quantity <= 0) {
-      throw new ApiError(400, "Invalid cart quantity");
-    }
-
-    if (item.product.stock < item.quantity) {
-      throw new ApiError(
-        400,
-        `Not enough stock for ${item.product.name}`
-      );
-    }
-
-    subtotal += Number(item.product.price) * item.quantity;
+  for (const item of order.items) {
+    subtotal += Number(item.price) * item.quantity;
   }
 
   // Same delivery logic as checkout
@@ -57,7 +47,7 @@ export const createPaymentIntent = async (userId: string) => {
   const STANDARD_DELIVERY_FEE = 49;
 
   const deliveryFee =
-    subtotal > FREE_SHIPPING_THRESHOLD || subtotal === 0
+    subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0
       ? 0
       : STANDARD_DELIVERY_FEE;
 
@@ -73,7 +63,7 @@ export const createPaymentIntent = async (userId: string) => {
   const razorpayOrder = await razorpay.orders.create({
     amount: amountInPaise,
     currency: "INR",
-    receipt: `agentcart_${Date.now()}`,
+    receipt: `ac_${Date.now()}_${order.id.slice(0, 16)}`,
   });
 
   return {
@@ -85,4 +75,45 @@ export const createPaymentIntent = async (userId: string) => {
     deliveryFee,
     totalAmount,
   };
+};
+
+export const verifyPaymentSignature = async (
+  userId: string,
+  orderId: string,
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  razorpaySignature: string
+) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.status === "PAID") {
+    return order;
+  }
+
+  const crypto = await import("node:crypto");
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
+    .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+    .digest("hex");
+
+  if (
+    expectedSignature.length !== razorpaySignature.length ||
+    !crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(razorpaySignature)
+    )
+  ) {
+    throw new ApiError(400, "Invalid payment signature");
+  }
+
+  return prisma.order.update({
+    where: { id: order.id },
+    data: { status: "PAID" },
+  });
 };

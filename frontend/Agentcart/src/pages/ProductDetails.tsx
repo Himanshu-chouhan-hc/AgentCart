@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from  "react-router-dom";
 import {
   ArrowLeft,
@@ -22,7 +22,7 @@ import {
   type Product,
 } from "../services/productApi";
 
-import { addToCart } from "../services/cartApi";
+import { addToCart, getCart } from "../services/cartApi";
 
 import {
   getProductReviews,
@@ -45,11 +45,35 @@ const ProductDetails = () => {
 
   const [notice, setNotice] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [adding, setAdding] = useState(false);
+  const [buying, setBuying] = useState(false);
 
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const galleryImages = useMemo(() => {
+    if (!product) return [];
+
+    const images = Array.isArray(product.images)
+      ? product.images.filter(Boolean)
+      : [];
+
+    if (images.length > 0) {
+      return images;
+    }
+
+    return product.image ? [product.image] : [];
+  }, [product]);
+
+  useEffect(() => {
+    if (galleryImages.length > 0) {
+      setSelectedImage((current) => current ?? galleryImages[0]);
+    } else {
+      setSelectedImage(null);
+    }
+  }, [galleryImages]);
 
   // Helper for status notices
   const showNotice = (text: string, type: "success" | "error" = "success") => {
@@ -138,6 +162,42 @@ const ProductDetails = () => {
       );
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!product) return;
+
+    const token =
+      localStorage.getItem("agentcart_token") ||
+      localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setBuying(true);
+      await addToCart(product.id);
+      const cart = await getCart();
+      const item = cart.items.find(
+        (cartItem) => cartItem.product.id === product.id
+      );
+
+      if (!item) {
+        throw new Error("Could not prepare this product for checkout.");
+      }
+
+      navigate("/checkout", {
+        state: { selectedItemIds: [item.id] },
+      });
+    } catch (error) {
+      showNotice(
+        error instanceof Error ? error.message : "Could not buy this product.",
+        "error"
+      );
+    } finally {
+      setBuying(false);
     }
   };
 
@@ -308,19 +368,45 @@ const ProductDetails = () => {
         {/* PRODUCT GRID */}
         <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:gap-12">
           {/* IMAGE CONTAINER */}
-          <div className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-6 shadow-sm">
-            {product.image ? (
-              <img
-                src={product.image}
-                alt={product.name}
-                className="h-full w-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-gray-300">
-                <ShoppingBag size={64} strokeWidth={1.5} />
-                <span className="mt-2 text-xs font-medium text-gray-400">
-                  No preview available
-                </span>
+          <div className="flex flex-col gap-4">
+            <div className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-6 shadow-sm">
+              {selectedImage ? (
+                <img
+                  src={selectedImage}
+                  alt={product.name}
+                  className="h-full w-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-300">
+                  <ShoppingBag size={64} strokeWidth={1.5} />
+                  <span className="mt-2 text-xs font-medium text-gray-400">
+                    No preview available
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {galleryImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {galleryImages.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedImage(image)}
+                    className={`overflow-hidden rounded-2xl border bg-white p-1 transition ${
+                      selectedImage === image
+                        ? "border-[#F4D000] ring-2 ring-[#F4D000]/30"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    aria-label={`View product image ${index + 1}`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} view ${index + 1}`}
+                      className="h-20 w-full rounded-xl object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -407,6 +493,15 @@ const ProductDetails = () => {
               >
                 <ShoppingBag size={18} />
                 {adding ? "Adding to Cart..." : "Add to Cart"}
+              </button>
+
+              <button
+                type="button"
+                disabled={adding || buying || product.stock <= 0}
+                onClick={() => void handleBuyNow()}
+                className="flex-1 rounded-2xl bg-[#111] py-4 text-sm font-bold text-white shadow-sm transition hover:bg-gray-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {buying ? "Preparing Checkout..." : "Buy Now"}
               </button>
 
               <button

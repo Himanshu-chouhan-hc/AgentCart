@@ -3,7 +3,13 @@ model Product {
   name        String
   description String?
   price       Decimal @db.Decimal(10, 2)
-  image       String?
+
+  // Main product image / thumbnail
+  image String?
+
+  // Multiple product images / 360° view frames
+  images Json?
+
   brand       String?
   stock       Int     @default(0)
   rating      Float   @default(0)

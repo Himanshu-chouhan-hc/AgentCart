@@ -7,6 +7,7 @@ export type Product = {
   description?: string | null;
   price: number | string;
   image?: string | null;
+  images?: string[] | null;
   brand?: string | null;
   stock: number;
   rating: number;

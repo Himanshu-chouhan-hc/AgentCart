@@ -21,6 +21,10 @@ import {
   getCurrentUser,
   logoutUser,
 } from "../services/authApi";
+import {
+  getAddresses,
+  type Address,
+} from "../services/addressApi";
 
 interface UserData {
   id: string;
@@ -35,6 +39,7 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<UserData | null>(null);
+  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -47,9 +52,13 @@ const Profile = () => {
         setError("");
 
         const userData = await getCurrentUser();
+        const addresses = await getAddresses();
+        const savedDefaultAddress =
+          addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
 
         if (isMounted) {
           setUser(userData);
+          setDefaultAddress(savedDefaultAddress);
         }
       } catch (err) {
         console.error("Profile error:", err);
@@ -130,6 +139,21 @@ const Profile = () => {
   }
 
   const initial = user.name?.charAt(0)?.toUpperCase() || "U";
+  const profilePhone = defaultAddress?.phone || user.phone || "Not provided";
+  const profileLocation =
+    defaultAddress
+      ? `${defaultAddress.city}, ${defaultAddress.state}`
+      : user.location || "Not provided";
+  const profileAddressText = defaultAddress
+    ? [
+        defaultAddress.addressLine1,
+        defaultAddress.addressLine2,
+        `${defaultAddress.city}, ${defaultAddress.state} - ${defaultAddress.postalCode}`,
+        defaultAddress.country,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : "No address saved yet";
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-[#111111]">
@@ -241,7 +265,7 @@ const Profile = () => {
 
               <button
                 type="button"
-                onClick={() => navigate("/address")}
+                onClick={() => navigate("/addresses")}
                 className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
               >
                 <span className="flex items-center gap-3">
@@ -302,14 +326,33 @@ const Profile = () => {
                 <ProfileField
                   label="Phone Number"
                   icon={<Phone size={17} />}
-                  value={user.phone || "Not provided"}
+                  value={profilePhone}
                 />
 
                 <ProfileField
                   label="Location"
                   icon={<MapPin size={17} />}
-                  value={user.location || "Not provided"}
+                  value={profileLocation}
                 />
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    Saved Address
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/addresses")}
+                    className="text-xs font-semibold text-[#111111] hover:text-[#b39a00]"
+                  >
+                    Manage
+                  </button>
+                </div>
+
+                <p className="mt-3 text-sm leading-6 text-gray-700">
+                  {profileAddressText}
+                </p>
               </div>
             </section>
 

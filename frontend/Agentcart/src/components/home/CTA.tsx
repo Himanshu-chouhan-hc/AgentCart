@@ -1,5 +1,5 @@
 import { ArrowRight, Sparkles } from "lucide-react";
-
+import{Link}from"react-router-dom";
 const CTA = () => {
   return (
     <section className="bg-[#111111]">
@@ -21,10 +21,12 @@ const CTA = () => {
           </h2>
         </div>
 
-        <button className="flex shrink-0 items-center gap-2 rounded-xl bg-[#F4D000] px-6 py-3.5 text-sm font-bold text-[#111111] transition hover:bg-[#e6c700]">
-          Start Shopping
-          <ArrowRight size={18} />
-        </button>
+        <Link to="/shop">
+          <button className="flex shrink-0 items-center gap-2 rounded-xl bg-[#F4D000] px-6 py-3.5 text-sm font-bold text-[#111111] transition hover:bg-[#e6c700]">
+            Start Shopping
+            <ArrowRight size={18} />
+          </button>
+        </Link>
 
       </div>
     </section>

@@ -28,6 +28,9 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const loadCart = async () => {
     try {
@@ -36,6 +39,7 @@ const Cart = () => {
 
       const data = await getCart();
       setCart(data);
+      setSelectedItemIds(new Set(data.items.map((item) => item.id)));
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -75,6 +79,22 @@ const Cart = () => {
       : STANDARD_DELIVERY_FEE;
 
   const total = subtotal + delivery;
+
+  const selectedItems = cart.items.filter((item) =>
+    selectedItemIds.has(item.id)
+  );
+
+  const toggleItemSelection = (itemId: string) => {
+    setSelectedItemIds((current) => {
+      const next = new Set(current);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
 
   const handleQuantityChange = async (
     itemId: string,
@@ -191,6 +211,12 @@ const Cart = () => {
 
                   return (
                     <article className="cart-item" key={item.id}>
+                      <input
+                        type="checkbox"
+                        checked={selectedItemIds.has(item.id)}
+                        onChange={() => toggleItemSelection(item.id)}
+                        aria-label={`Select ${item.product.name} for checkout`}
+                      />
                       <Link
                         to={`/product/${item.product.id}`}
                         className="cart-item-image"
@@ -313,8 +339,12 @@ const Cart = () => {
               <button
                 type="button"
                 className="cart-button checkout-button"
-                disabled={cart.items.length === 0}
-                onClick={() => navigate("/checkout")}
+                disabled={selectedItems.length === 0}
+                onClick={() =>
+                  navigate("/checkout", {
+                    state: { selectedItemIds: selectedItems.map((item) => item.id) },
+                  })
+                }
               >
                 Proceed to Checkout
                 <ArrowRight size={18} />

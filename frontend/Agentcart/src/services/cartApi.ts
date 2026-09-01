@@ -44,9 +44,13 @@ const authHeaders = (): Record<string, string> => {
     localStorage.getItem("agentcart_token") ||
     localStorage.getItem("token");
 
+  if (!token) {
+    throw new Error("Please log in again to continue.");
+  }
+
   return {
     "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
+    Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
   };
 };
 

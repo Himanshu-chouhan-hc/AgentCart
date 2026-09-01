@@ -39,8 +39,9 @@ function AppContent() {
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/checkout" element={<Checkout />} />
-<Route path="/orders/:orderId" element={<Orders />} />      </Routes>
-
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:orderId" element={<Orders />} />
+      </Routes>
     </>
   );
 }
