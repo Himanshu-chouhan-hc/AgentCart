@@ -11,6 +11,7 @@ import ProductDetails from "./pages/ProductDetails";
 import Wishlist from "./pages/Wishlist";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
+import AIShoppingAssistant from "./components/AIShoppingAssistant";
 
 import {
   BrowserRouter as Router,
@@ -42,6 +43,7 @@ function AppContent() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/:orderId" element={<Orders />} />
       </Routes>
+      <AIShoppingAssistant />
     </>
   );
 }
