@@ -44,7 +44,7 @@ const Features = () => {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-200 hover:-translate-y-1 hover:border-yellow-300 hover:shadow-lg"
+              className="home-feature group rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-yellow-300 hover:shadow-lg"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F4D000] transition group-hover:scale-110">
                 {feature.icon}

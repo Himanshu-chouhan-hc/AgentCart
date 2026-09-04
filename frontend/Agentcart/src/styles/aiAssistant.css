@@ -10,6 +10,19 @@
   font-family: "DM Sans", sans-serif;
 }
 
+.ai-assistant--embedded {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+}
+.ai-assistant--embedded .ai-assistant-panel {
+  width: min(760px, 100%);
+  height: min(650px, 72vh);
+  margin: 0 auto;
+  border-radius: 18px;
+}
+
 .ai-assistant-trigger {
   position: relative;
   display: grid;

@@ -4,6 +4,8 @@ import {
   Menu,
   Search,
   ShoppingCart,
+  Heart,
+  Sparkles,
   User,
   X,
 } from "lucide-react";
@@ -146,12 +148,15 @@ const Navbar = () => {
           </Link>
 
           {/* ================= DESKTOP NAV LINKS ================= */}
-          <nav className="hidden items-center gap-2 md:flex">
+          <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/" end className={navLinkStyle}>
               Home
             </NavLink>
             <NavLink to="/shop" className={navLinkStyle}>
               Shop
+            </NavLink>
+            <NavLink to="/ai" className={navLinkStyle}>
+              <span className="inline-flex items-center gap-1"><Sparkles size={14} /> AI Assistant</span>
             </NavLink>
           </nav>
 
@@ -201,6 +206,18 @@ const Navbar = () => {
               className="relative flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition hover:bg-gray-100 active:scale-95"
             >
               <ShoppingCart size={20} />
+              <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#F4D000] px-1 text-[10px] font-bold text-[#111111] shadow-sm">
+                0
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Open wishlist"
+              onClick={() => navigate("/wishlist")}
+              className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition hover:bg-gray-100 active:scale-95 sm:flex"
+            >
+              <Heart size={20} />
               <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#F4D000] px-1 text-[10px] font-bold text-[#111111] shadow-sm">
                 0
               </span>
@@ -320,6 +337,36 @@ const Navbar = () => {
                 }
               >
                 Shop
+              </NavLink>
+
+              <NavLink
+                to="/ai"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-yellow-50 text-[#111111]"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`
+                }
+              >
+                <Sparkles size={17} />
+                AI Assistant
+              </NavLink>
+
+              <NavLink
+                to="/wishlist"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-yellow-50 text-[#111111]"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`
+                }
+              >
+                <Heart size={17} />
+                Wishlist
               </NavLink>
 
               <NavLink

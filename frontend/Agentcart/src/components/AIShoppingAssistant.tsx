@@ -11,9 +11,9 @@ import "../styles/aiAssistant.css";
 const purchaseWords = /\b(buy|purchase|order)\b/i;
 const confirmationWords = /^(yes|yeah|yep|confirm|go ahead|do it|sure)\b/i;
 
-const AIShoppingAssistant = () => {
+const AIShoppingAssistant = ({ embedded = false }: { embedded?: boolean }) => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(embedded);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<AIChatMessage[]>([
     { role: "assistant", content: "Hey! What are you shopping for?" },
@@ -101,7 +101,7 @@ const AIShoppingAssistant = () => {
   };
 
   return (
-    <div className="ai-assistant">
+    <div className={`ai-assistant${embedded ? " ai-assistant--embedded" : ""}`}>
       {isOpen && (
         <section className="ai-assistant-panel" aria-label="AgentCart AI shopping assistant">
           <header className="ai-assistant-header"><div className="ai-assistant-title"><span className="ai-assistant-logo"><Sparkles size={15} /></span><span><strong>AgentCart AI</strong><small>Shopping Assistant</small></span></div><div className="ai-assistant-status"><span /> Ready</div><button type="button" onClick={() => setIsOpen(false)} aria-label="Close assistant"><X size={17} /></button></header>
@@ -126,7 +126,7 @@ const AIShoppingAssistant = () => {
           </form>
         </section>
       )}
-      <button type="button" className="ai-assistant-trigger" onClick={() => setIsOpen((open) => !open)} aria-label="Open AgentCart AI"><Bot size={21} /><span className="ai-trigger-pulse" /></button>
+      {!embedded && <button type="button" className="ai-assistant-trigger" onClick={() => setIsOpen((open) => !open)} aria-label="Open AgentCart AI"><Bot size={21} /><span className="ai-trigger-pulse" /></button>}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import Navbar from "./components/layouts/navbar";
+import Footer from "./components/layouts/Footer";
 import "./App.css";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -12,6 +13,7 @@ import Wishlist from "./pages/Wishlist";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import AIShoppingAssistant from "./components/AIShoppingAssistant";
+import AI from "./pages/AI";
 
 import {
   BrowserRouter as Router,
@@ -42,8 +44,10 @@ function AppContent() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/:orderId" element={<Orders />} />
+        <Route path="/ai" element={<AI />} />
       </Routes>
-      <AIShoppingAssistant />
+      {location.pathname !== "/ai" && <AIShoppingAssistant />}
+      {location.pathname !== "/login" && location.pathname !== "/signup" && <Footer />}
     </>
   );
 }

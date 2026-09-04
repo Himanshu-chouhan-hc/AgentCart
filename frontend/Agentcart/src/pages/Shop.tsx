@@ -35,6 +35,10 @@ const Shop = () => {
 
   useEffect(() => {
     setQuery(searchParams.get("search") || "");
+    const categoryQuery = searchParams.get("category");
+    if (categoryQuery) {
+      setCategory(categoryQuery);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -91,9 +95,11 @@ const Shop = () => {
     const searchQuery = query.toLowerCase().trim();
 
     return products.filter((product) => {
+      const categoryName = product.category?.name?.toLowerCase() || "";
       const matchesCategory =
         category === "All" ||
-        product.category?.name === category;
+        categoryName === category.toLowerCase() ||
+        categoryName.includes(category.toLowerCase());
 
       if (aiSearchActive) {
         return matchesCategory;
@@ -157,10 +163,7 @@ const Shop = () => {
             <em>worth keeping.</em>
           </h1>
 
-          <p>
-            Browse thoughtful picks, compare what matters,
-            and let your shopping agent do the sorting.
-          </p>
+            <p>Discover products curated for you, with an AI assistant ready when you need a better way to search.</p>
         </div>
       </section>
 
@@ -201,7 +204,7 @@ const Shop = () => {
                   }, { replace: true });
                 }
               }}
-              placeholder="Search products..."
+              placeholder="Search products or ask AI..."
               aria-label="Search products"
             />
           </div>
@@ -291,9 +294,20 @@ const Shop = () => {
                 No products found
               </h2>
 
-              <p>
-                Try a different search or category.
-              </p>
+              <p>Try a different search or explore our categories.</p>
+              {(query || category !== "All") && (
+                <button
+                  type="button"
+                  className="shop-clear-button"
+                  onClick={() => {
+                    setQuery("");
+                    setCategory("All");
+                    setSearchParams({}, { replace: true });
+                  }}
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           )}
 

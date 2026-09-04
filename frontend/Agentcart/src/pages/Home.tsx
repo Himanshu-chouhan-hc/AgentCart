@@ -8,7 +8,7 @@ import CTA from "../components/home/CTA";
 
 const Home = () => {
   return (
-    <main className="min-h-screen bg-[#fafafa] text-[#111111]">
+    <main className="home-page min-h-screen bg-[#fafafa] text-[#111111]">
       {/* 1. Hero Section - Primary Hook & Search CTA */}
       <Hero />
 

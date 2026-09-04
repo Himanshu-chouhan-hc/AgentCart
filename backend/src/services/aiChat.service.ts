@@ -84,7 +84,12 @@ export const getAIChatResponse = async (input: ChatInput) => {
 
   const ordinal = ordinalIndex(message);
   let selectedProducts = ordinal !== null ? (ordinal < orderedContextProducts.length ? [orderedContextProducts[ordinal]] : []) : [];
-  if (!selectedProducts.length && orderedContextProducts.length && /\b(this|it|that|one)\b/i.test(message)) selectedProducts = [orderedContextProducts[orderedContextProducts.length - 1]];
+  if (
+    !selectedProducts.length &&
+    orderedContextProducts.length &&
+    (/\b(this|it|that|one)\b/i.test(message) ||
+      ["ADD_TO_CART", "ADD_TO_WISHLIST", "REMOVE_FROM_CART", "VIEW_PRODUCT"].includes(action))
+  ) selectedProducts = [orderedContextProducts[orderedContextProducts.length - 1]];
 
   if (!selectedProducts.length && action !== "OPEN_CART" && action !== "OPEN_CHECKOUT") {
     const allProducts = await prisma.product.findMany({ where: { isActive: true }, include: { category: true }, take: 100 });

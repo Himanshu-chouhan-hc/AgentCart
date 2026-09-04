@@ -44,7 +44,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white py-12 sm:py-16 lg:py-20">
+    <section className="home-hero relative overflow-hidden bg-white py-12 sm:py-16 lg:py-20">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-2 lg:px-10">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-4 py-2 text-[#111111]">
@@ -55,14 +55,14 @@ const Hero = () => {
           </div>
 
           <h1 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-[#111111] sm:text-6xl">
-            Shopping that <br />
-            <span className="bg-gradient-to-r from-[#F4D000] to-[#b39a00] bg-clip-text text-transparent">
-              thinks for you.
+            Shop smarter. <br />
+            <span className="text-[#b08f00]">
+              Let AI find it.
             </span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-7 text-gray-600 sm:text-lg">
-            Tell AgentCart what you need. Our AI discovers, compares options, and finds the best deals tailored specifically to your preferences.
+            Search naturally, discover better products, and shop with your personal AI assistant.
           </p>
 
           <form
@@ -74,7 +74,7 @@ const Hero = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask AI what you want to buy..."
+              placeholder="Search products or ask AI..."
               className="h-11 flex-1 bg-transparent px-3 text-sm text-[#111111] outline-none placeholder:text-gray-400"
             />
             <button
