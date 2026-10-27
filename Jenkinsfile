@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -20,10 +20,17 @@ pipeline {
 
         stage('Deploy Container') {
             steps {
-                bat '''
-                    docker rm -f agentcart-backend-jenkins 2>NUL
-                    docker run -d --name agentcart-backend-jenkins -p 5001:5000 --env-file backend/.env -e NODE_ENV=production agentcart-backend:jenkins
-                '''
+                withCredentials([
+                    string(
+                        credentialsId: 'agentcart-database-url',
+                        variable: 'DATABASE_URL'
+                    )
+                ]) {
+                    bat '''
+                        docker rm -f agentcart-backend-jenkins 2>NUL
+                        docker run -d --name agentcart-backend-jenkins -p 5001:5000 -e DATABASE_URL="%DATABASE_URL%" -e NODE_ENV=production agentcart-backend:jenkins
+                    '''
+                }
             }
         }
 
@@ -34,3 +41,4 @@ pipeline {
         }
     }
 }
+```
