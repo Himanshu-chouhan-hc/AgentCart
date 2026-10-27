@@ -112,3 +112,31 @@
   .ai-assistant-trigger { margin-left: auto; }
   .ai-assistant-panel { width: 100%; height: min(540px, calc(100vh - 82px)); margin-bottom: 10px; border-radius: 20px 20px 16px 16px; }
 }
+
+@media (max-width: 640px) {
+  .ai-assistant--embedded .ai-assistant-panel { height: min(680px, 78vh); border-radius: 13px; }
+  .ai-assistant-header { gap: 8px; min-height: 58px; padding: 10px 11px; }
+  .ai-assistant-status { margin-left: auto; }
+  .ai-assistant-messages { padding: 11px; }
+  .ai-assistant-welcome { padding: 12px; }
+  .ai-assistant-welcome h2 { font-size: 15px; }
+  .ai-message { max-width: 94%; font-size: 10px; }
+  .ai-chat-products article { grid-template-columns: 44px minmax(0, 1fr); gap: 5px 8px; }
+  .ai-chat-product-image { width: 44px; height: 49px; }
+  .ai-product-price { grid-column: 2; }
+  .ai-product-reason, .ai-product-actions { grid-column: 2; }
+  .ai-product-actions { flex-wrap: wrap; }
+  .ai-product-actions button { min-height: 29px; }
+  .ai-context-actions button, .ai-suggestion-list button { min-height: 29px; }
+  .ai-assistant-input { padding: 8px; }
+  .ai-voice-button span { display: none; }
+}
+
+@media (max-width: 380px) {
+  .ai-assistant-title strong { font-size: 12px; }
+  .ai-assistant-title small { font-size: 9px; }
+  .ai-assistant-status { display: none; }
+  .ai-chat-products article strong { white-space: normal; }
+  .ai-product-actions button { flex: 1 1 auto; justify-content: center; }
+  .ai-assistant-input input { font-size: 10px; }
+}
